@@ -1,13 +1,16 @@
 name: build_win
+
 agent:
   type: Unity::VM
-  image: slough-ops/win10-base:stable
-  flavor: m1.large
+  image: cds-ops/win10-vs2017:stable
+  flavor: b1.xlarge
+
 commands:
   - git submodule update --init --recursive
   - perl external/buildscripts/build_runtime_win64.pl --stevedorebuilddeps=1
   - mkdir -p incomingbuilds/win64
   - cp -r builds/* incomingbuilds/win64/
+
 artifacts: 
   win64.zip:
     paths:
