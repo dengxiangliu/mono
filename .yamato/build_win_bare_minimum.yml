@@ -1,4 +1,4 @@
-name: build_win
+name: build_win_bare_minimum
 
 agent:
   type: Unity::VM

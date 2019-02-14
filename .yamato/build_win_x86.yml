@@ -1,4 +1,4 @@
-name: build_win
+name: build_win_x86
 
 agent:
   type: Unity::VM

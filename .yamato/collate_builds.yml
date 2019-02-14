@@ -1,4 +1,4 @@
-name:  collate_builds
+name: collate_builds
 
 agent:
   type: Unity::VM
