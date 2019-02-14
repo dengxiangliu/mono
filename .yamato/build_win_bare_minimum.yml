@@ -1,0 +1,17 @@
+name: build_win
+
+agent:
+  type: Unity::VM
+  image: cds-ops/win10-vs2017:stable
+  flavor: b1.xlarge
+
+commands:
+  - git submodule update --init --recursive
+  - perl external/buildscripts/build_unityscript_bareminimum_win.pl
+  - mkdir -p incomingbuilds/bareminimum
+  - cp -r builds/* incomingbuilds/bareminimum/
+
+artifacts: 
+  bareminimum.zip:
+    paths:
+      - incomingbuilds/bareminimum/**

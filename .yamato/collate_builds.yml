@@ -6,5 +6,11 @@ agent:
   flavor: b1.large
 
 dependencies:
-  - .yamato/build_win.yml
+  - .yamato/build_android.yml
   - .yamato/build_linux_x64.yml
+  - .yamato/build_linux_x86.yml
+  - .yamato/build_osx_classlibs.yml
+  - .yamato/build_osx_runtime.yml
+  - .yamato/build_win.yml
+  - .yamato/build_win_bare_minimum.yml
+  - .yamato/build_win_x86.yml

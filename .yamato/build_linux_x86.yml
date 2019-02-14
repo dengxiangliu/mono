@@ -1,0 +1,20 @@
+name: build_linux_x86
+
+agent:
+  type: Unity::VM
+  image: cds-ops/ubuntu-18.04-agent:v1.0.11-765607
+  flavor: b1.large
+
+commands:
+  - git submodule update --init --recursive
+  - cd external/buildscripts
+  - ./bee
+  - cd ../..
+  - perl external/buildscripts/build_runtime_linux.pl --stevedorebuilddeps=1
+  - mkdir -p incomingbuilds/linux32
+  - cp -r builds/* incomingbuilds/linux32/
+
+artifacts: 
+  linux32.zip:
+    paths:
+      - incomingbuilds/linux32/**

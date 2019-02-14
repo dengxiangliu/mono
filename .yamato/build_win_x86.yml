@@ -1,0 +1,17 @@
+name: build_win
+
+agent:
+  type: Unity::VM
+  image: cds-ops/win10-vs2017:stable
+  flavor: b1.xlarge
+
+commands:
+  - git submodule update --init --recursive
+  - perl external/buildscripts/build_runtime_win.pl --stevedorebuilddeps=1
+  - mkdir -p incomingbuilds/win32
+  - cp -r builds/* incomingbuilds/win32/
+
+artifacts: 
+  win32.zip:
+    paths:
+      - incomingbuilds/win32/**

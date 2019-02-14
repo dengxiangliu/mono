@@ -1,0 +1,20 @@
+name: build_osx_runtime
+
+agent:
+  type: Unity::VM::osx
+  image: buildfarm/mac:latest
+  flavor: m1.mac
+
+commands:
+  - git submodule update --init --recursive
+  - cd external/buildscripts
+  - ./bee
+  - cd ../..
+  - perl external/buildscripts/build_runtime_osx.pl --stevedorebuilddeps=1
+  - mkdir -p incomingbuilds/osx-i386
+  - cp -r builds/* incomingbuilds/osx-i386/
+
+artifacts: 
+  osx-i386.zip:
+    paths:
+      - incomingbuilds/osx-i386/**

@@ -1,0 +1,20 @@
+name: build_android
+
+agent:
+  type: Unity::VM::osx
+  image: buildfarm/mac:stable
+  flavor: m1.mac
+
+commands:
+  - git submodule update --init --recursive
+  - cd external/buildscripts
+  - ./bee
+  - cd ../..
+  - perl external/buildscripts/build_runtime_android.pl --stevedorebuilddeps=1
+  - mkdir -p incomingbuilds/android
+  - cp -r builds/* incomingbuilds/android/
+
+artifacts: 
+  android.zip:
+    paths:
+      - incomingbuilds/android/**
