@@ -6,7 +6,7 @@ agent:
   flavor: b1.large
 
 commands:
-  - build_linux_x64.sh
+  - .yamato/build_linux_x64.sh
 
 artifacts: 
   linux64.zip:

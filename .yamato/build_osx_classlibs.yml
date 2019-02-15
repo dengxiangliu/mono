@@ -6,7 +6,7 @@ agent:
   flavor: m1.mac
 
 commands:
-  - build_osx_classlibs.sh
+  - .yamato/build_osx_classlibs.sh
 
 
 artifacts: 
