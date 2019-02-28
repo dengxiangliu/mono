@@ -8,8 +8,8 @@ agent:
 commands:
   - git submodule update --init --recursive
   - perl external/buildscripts/build_unityscript_bareminimum_win.pl
-  - mkdir -p incomingbuilds/bareminimum
-  - cp -r builds/* incomingbuilds/bareminimum/
+  - mkdir incomingbuilds\bareminimum
+  - cp builds incomingbuilds/bareminimum
 
 artifacts: 
   bareminimum.zip:
