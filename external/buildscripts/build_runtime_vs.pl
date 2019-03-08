@@ -40,7 +40,7 @@ sub CompileVCProj
 	my $config;
 
 	my $msbuild = $ENV{"ProgramFiles(x86)"}."/MSBuild/$msBuildVersion/Bin/MSBuild.exe";
-	if !(-d $extraBuildTools)
+	if (! -d $extraBuildTools)
 	{
 		$msbuild = $ENV{"ProgramFiles(x86)"}."/Microsoft Visual Studio/2017/Professional/MSBuild/15.0/Bin/MSBuild.exe";
 	}
