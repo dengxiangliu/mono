@@ -2,7 +2,7 @@ name: build_win
 
 agent:
   type: Unity::VM
-  image: cds-ops/win10-vs2017:stable
+  image: platform-foundation/windows-mono-bokken:stable
   flavor: b1.xlarge
 
 commands:
