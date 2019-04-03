@@ -5,7 +5,7 @@ agent:
   image: platform-foundation/windows-mono-bokken:latest
   flavor: b1.xlarge
 
-interpreter: ps
+interpreter: powershell
 
 commands:
   - git submodule update --init --recursive
