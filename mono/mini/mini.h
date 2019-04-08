@@ -52,6 +52,9 @@
 #include <nacl/nacl_dyncode.h>
 #endif
 
+#if ENABLE_SECURITY_BUILD
+#include <mono/plugin/plugin.h>
+#endif
 
 /*
  * The mini code should not have any compile time dependencies on the GC being used, so the same object file from mini/
@@ -2473,6 +2476,11 @@ gboolean  mono_linterval_covers             (MonoLiveInterval *interval, int pos
 gint32    mono_linterval_get_intersect_pos  (MonoLiveInterval *i1, MonoLiveInterval *i2);
 void      mono_linterval_split              (MonoCompile *cfg, MonoLiveInterval *interval, MonoLiveInterval **i1, MonoLiveInterval **i2, int pos);
 void      mono_liveness_handle_exception_clauses (MonoCompile *cfg);
+
+#if ENABLE_SECURITY_BUILD
+// plugin init
+void mini_plugin_init ();
+#endif
 
 /* Native Client functions */
 gpointer mono_realloc_native_code(MonoCompile *cfg);

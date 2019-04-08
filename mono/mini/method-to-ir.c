@@ -7498,6 +7498,13 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
 	MonoBitSet *seq_point_locs = NULL;
 	MonoBitSet *seq_point_set_locs = NULL;
 
+#if ENABLE_SECURITY_BUILD
+	int op;
+	if (g_mono_method_to_ir_cb != 0) {
+		g_mono_method_to_ir_cb(cfg, method, start_bblock, end_bblock, return_var, inline_args, inline_offset, is_virtual_call);
+	}
+#endif
+
 	cfg->disable_inline = is_jit_optimizer_disabled (method);
 
 	/* serialization and xdomain stuff may need access to private fields and methods */
@@ -8048,7 +8055,17 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
 		if (cfg->verbose_level > 3)
 			printf ("converting (in B%d: stack: %d) %s", cfg->cbb->block_num, (int)(sp - stack_start), mono_disasm_code_one (NULL, method, ip, NULL));
 
-		switch (*ip) {
+#if ENABLE_SECURITY_BUILD
+		if (g_strcasecmp(image->assembly_name, "Assembly-CSharp") == 0)
+		{
+			if (method->wrapper_type != 4 && g_get_opcode != 0){
+ 				op = g_get_opcode(*ip);
+ 			}
+ 		}
+#else
+		op = *ip;
+#endif
+		switch (op) {
 		case CEE_NOP:
 			if (seq_points && !sym_seq_points && sp != stack_start) {
 				/*
@@ -8075,33 +8092,135 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
 			MONO_ADD_INS (cfg->cbb, ins);
 			break;
 		case CEE_LDARG_0:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 0;
+			CHECK_ARG(n);
+			EMIT_NEW_ARGLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDARG_1:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 1;
+			CHECK_ARG(n);
+			EMIT_NEW_ARGLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDARG_2:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 2;
+			CHECK_ARG(n);
+			EMIT_NEW_ARGLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDARG_3:
 			CHECK_STACK_OVF (1);
+#if ENABLE_SECURITY_BUILD
+			n = 3;
+#else
 			n = (*ip)-CEE_LDARG_0;
+#endif
 			CHECK_ARG (n);
 			EMIT_NEW_ARGLOAD (cfg, ins, n);
 			ip++;
 			*sp++ = ins;
 			break;
 		case CEE_LDLOC_0:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 0;
+			CHECK_LOCAL(n);
+			EMIT_NEW_LOCLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDLOC_1:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 1;
+			CHECK_LOCAL(n);
+			EMIT_NEW_LOCLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDLOC_2:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			n = 2;
+			CHECK_LOCAL(n);
+			EMIT_NEW_LOCLOAD(cfg, ins, n);
+			ip++;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDLOC_3:
 			CHECK_STACK_OVF (1);
+#if ENABLE_SECURITY_BUILD
+			n = 3;
+#else
 			n = (*ip)-CEE_LDLOC_0;
+#endif
 			CHECK_LOCAL (n);
 			EMIT_NEW_LOCLOAD (cfg, ins, n);
 			ip++;
 			*sp++ = ins;
 			break;
 		case CEE_STLOC_0:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK(1);
+			n = 0;
+			CHECK_LOCAL(n);
+			--sp;
+			if (!dont_verify_stloc && target_type_is_incompatible(cfg, header->locals[n], *sp))
+				UNVERIFIED;
+			emit_stloc_ir(cfg, sp, header, n);
+			++ip;
+			inline_costs += 1;
+			break;
+#endif
 		case CEE_STLOC_1:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK(1);
+			n = 1;
+			CHECK_LOCAL(n);
+			--sp;
+			if (!dont_verify_stloc && target_type_is_incompatible(cfg, header->locals[n], *sp))
+				UNVERIFIED;
+			emit_stloc_ir(cfg, sp, header, n);
+			++ip;
+			inline_costs += 1;
+			break;
+#endif
 		case CEE_STLOC_2:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK(1);
+			n = 2;
+			CHECK_LOCAL(n);
+			--sp;
+			if (!dont_verify_stloc && target_type_is_incompatible(cfg, header->locals[n], *sp))
+				UNVERIFIED;
+			emit_stloc_ir(cfg, sp, header, n);
+			++ip;
+			inline_costs += 1;
+			break;
+#endif
 		case CEE_STLOC_3: {
 			CHECK_STACK (1);
+#if ENABLE_SECURITY_BUILD
+			n = 3;
+#else
 			n = (*ip)-CEE_STLOC_0;
+#endif
 			CHECK_LOCAL (n);
 			--sp;
 			if (!dont_verify_stloc && target_type_is_incompatible (cfg, header->locals [n], *sp))
@@ -8192,16 +8311,76 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
 			*sp++ = ins;
 			break;
 		case CEE_LDC_I4_0:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 0);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_1:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 1);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_2:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 2);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_3:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 3);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_4:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 4);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_5:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 5);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_6:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 6);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_7:
+#if ENABLE_SECURITY_BUILD
+			CHECK_STACK_OVF(1);
+			EMIT_NEW_ICONST(cfg, ins, 7);
+			++ip;
+			*sp++ = ins;
+			break;
+#endif
 		case CEE_LDC_I4_8:
 			CHECK_STACK_OVF (1);
+#if ENABLE_SECURITY_BUILD
+			EMIT_NEW_ICONST (cfg, ins, 8);
+#else
 			EMIT_NEW_ICONST (cfg, ins, (*ip) - CEE_LDC_I4_0);
+#endif
 			++ip;
 			*sp++ = ins;
 			break;

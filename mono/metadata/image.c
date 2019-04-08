@@ -39,6 +39,9 @@
 #include <mono/metadata/security-core-clr.h>
 #include <mono/metadata/verify-internals.h>
 #include <mono/metadata/verify.h>
+#if ENABLE_SECURITY_BUILD
+#include <mono/plugin/plugin.h>
+#endif
 #include <mono/metadata/image-internals.h>
 #include <mono/metadata/w32file.h>
 #include <sys/types.h>
@@ -470,6 +473,46 @@ load_metadata_ptrs (MonoImage *image, MonoCLIImageInfo *iinfo)
 	/* 24.2.1: Metadata root starts here */
 	ptr = image->raw_metadata;
 
+#if ENABLE_SECURITY_BUILD
+	/* Protect here */
+	if (image->name != 0) {
+		const char* assembly_name;
+#ifdef HOST_WIN32
+		assembly_name = strrchr(image->name, '\\');
+#endif
+
+#ifdef HOST_ANDROID
+		assembly_name = strrchr(image->name, '/');
+#endif // HOST_ANDROID
+
+		assembly_name = assembly_name != 0 ? assembly_name + 1 : image->name;
+		if (strncmp(assembly_name, "Assembly-CSharp.dll", 19) == 0 && g_metadata_encrypt != 0 && g_metadata_encrypt()) {
+			if (*(int*)ptr != 0) {
+				return FALSE;
+			}
+		}
+		else {
+			if (strncmp(ptr, "BSJB", 4) != 0) {
+				return FALSE;
+			}
+		}
+	}
+	guint32 version_string_len;
+	ptr += 4;
+	image->md_version_major = read16 (ptr);
+	ptr += 2;
+	image->md_version_minor = read16 (ptr);
+	ptr += 6;
+
+	version_string_len = read32 (ptr);
+	ptr += 4;
+	image->version = g_strndup (ptr, version_string_len);
+	ptr += version_string_len;
+	pad = ptr - image->raw_metadata;
+	if (pad % 4)
+		ptr += 4 - (pad % 4);
+#else
+
 	if (strncmp (ptr, "BSJB", 4) == 0){
 		guint32 version_string_len;
 
@@ -488,6 +531,7 @@ load_metadata_ptrs (MonoImage *image, MonoCLIImageInfo *iinfo)
 			ptr += 4 - (pad % 4);
 	} else
 		return FALSE;
+#endif
 
 	/* skip over flags */
 	ptr += 2;
@@ -503,6 +547,11 @@ load_metadata_ptrs (MonoImage *image, MonoCLIImageInfo *iinfo)
 		} else if (strncmp (ptr + 8, "#Strings", 9) == 0){
 			image->heap_strings.data = image->raw_metadata + read32 (ptr);
 			image->heap_strings.size = read32 (ptr + 4);
+			#if ENABLE_SECURITY_BUILD
+			if (g_get_string != 0) {
+				g_get_string (image->heap_strings.data, image->heap_strings.size);
+			}
+			#endif
 			ptr += 8 + 9;
 		} else if (strncmp (ptr + 8, "#US", 4) == 0){
 			image->heap_us.data = image->raw_metadata + read32 (ptr);
@@ -1507,7 +1556,26 @@ mono_image_open_from_data_internal (char *data, guint32 data_len, gboolean need_
 	MonoCLIImageInfo *iinfo;
 	MonoImage *image;
 	char *datac;
+#if ENABLE_SECURITY_BUILD
+	if (name != 0) {
+		const char* assembly_name;
+#ifdef HOST_WIN32
+		assembly_name = strrchr (name, '\\');
+#endif
 
+#ifdef HOST_ANDROID
+		assembly_name = strrchr(name, '/');
+#endif // HOST_ANDROID
+
+		assembly_name = assembly_name != 0 ? assembly_name + 1 : name;
+		if (g_strcasecmp(assembly_name, "Assembly-CSharp.dll") == 0) {
+			if (g_get_assembly_csharp != 0) {
+				g_get_assembly_csharp (&data, &data_len, name, (void*)g_callback_func_info);
+			}
+		}
+	}
+
+#endif
 	if (!data || !data_len) {
 		if (status)
 			*status = MONO_IMAGE_IMAGE_INVALID;

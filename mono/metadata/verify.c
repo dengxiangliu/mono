@@ -33,6 +33,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#if ENABLE_SECURITY_BUILD
+#include <plugin/plugin.h>
+#endif
+
 static MiniVerifierMode verifier_mode = MONO_VERIFIER_MODE_OFF;
 static gboolean verify_all = FALSE;
 
@@ -4829,6 +4833,9 @@ mono_method_verify (MonoMethod *method, int level)
 	MonoImage *image;
 	VerifyContext ctx;
 	GSList *tmp;
+#if ENABLE_SECURITY_BUILD
+	int op;
+#endif
 	VERIFIER_DEBUG ( printf ("Verify IL for method %s %s %s\n",  method->klass->name_space,  method->klass->name, method->name); );
 
 	init_verifier_stats ();
@@ -5127,18 +5134,46 @@ mono_method_verify (MonoMethod *method, int level)
 		dump_stack_state (&ctx.code [ip_offset]);
 		dump_stack_state (&ctx.eval);
 #endif
-
-		switch (*ip) {
+#if ENABLE_SECURITY_BUILD
+		if (g_strcasecmp(image->assembly_name, "Assembly-CSharp") == 0) {
+			if (method->wrapper_type != 4 && g_get_opcode != 0) {
+				op = g_get_opcode(*ip);
+			}
+ 		}
+		switch (op) {
+#else
+		switch (*ip) {	
+#endif
+		
 		case CEE_NOP:
 		case CEE_BREAK:
 			++ip;
 			break;
 
 		case CEE_LDARG_0:
+#if ENABLE_SECURITY_BUILD
+			push_arg(&ctx, 0, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDARG_1:
+#if ENABLE_SECURITY_BUILD
+			push_arg(&ctx, 1, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDARG_2:
+#if ENABLE_SECURITY_BUILD
+			push_arg(&ctx, 2, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDARG_3:
+#if ENABLE_SECURITY_BUILD
+			push_arg (&ctx, 3, FALSE);
+#else
 			push_arg (&ctx, *ip - CEE_LDARG_0, FALSE);
+#endif
 			++ip;
 			break;
 
@@ -5214,19 +5249,57 @@ mono_method_verify (MonoMethod *method, int level)
 			break;
 
 		case CEE_LDLOC_0:
+#if ENABLE_SECURITY_BUILD
+			push_local(&ctx, 0, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDLOC_1:
+#if ENABLE_SECURITY_BUILD
+			push_local(&ctx, 1, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDLOC_2:
+#if ENABLE_SECURITY_BUILD
+			push_local(&ctx, 2, FALSE);
+			++ip;
+			break;
+#endif
 		case CEE_LDLOC_3:
 			/*TODO support definite assignment verification? */
+#if ENABLE_SECURITY_BUILD
+			push_local(&ctx, 3, FALSE);
+#else
 			push_local (&ctx, *ip - CEE_LDLOC_0, FALSE);
+#endif
 			++ip;
 			break;
 
 		case CEE_STLOC_0:
+#if ENABLE_SECURITY_BUILD
+			store_local(&ctx, 0);
+			++ip;
+			break;
+#endif
 		case CEE_STLOC_1:
+#if ENABLE_SECURITY_BUILD
+			store_local(&ctx, 1);
+			++ip;
+			break;
+#endif
 		case CEE_STLOC_2:
+#if ENABLE_SECURITY_BUILD
+			store_local(&ctx, 2);
+			++ip;
+			break;
+#endif
 		case CEE_STLOC_3:
+#if ENABLE_SECURITY_BUILD
+			store_local (&ctx, 3);
+#else
 			store_local (&ctx, *ip - CEE_STLOC_0);
+#endif
 			++ip;
 			break;
 

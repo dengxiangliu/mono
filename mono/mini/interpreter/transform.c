@@ -810,6 +810,10 @@ generate (MonoMethod *method, RuntimeMethod *rtm, unsigned char *is_bb_start)
 	TransformData td;
 	int generating_code = 1;
 
+#if ENABLE_SECURITY_BUILD
+	int op;
+#endif
+
 	if (mono_method_signature (method)->is_inflated)
 		generic_context = &((MonoMethodInflated *) method)->context;
 
@@ -947,7 +951,16 @@ generate (MonoMethod *method, RuntimeMethod *rtm, unsigned char *is_bb_start)
 				(td.sp > td.stack && (td.sp [-1].type == STACK_TYPE_O || td.sp [-1].type == STACK_TYPE_VT)) ? (td.sp [-1].klass == NULL ? "?" : td.sp [-1].klass->name) : "",
 				td.vt_sp, td.max_vt_sp);
 		}
-		switch (*td.ip) {
+#if ENABLE_SECURITY_BUILD
+		if (g_strcasecmp(image->assembly_name, "Assembly-CSharp") == 0) {
+			if (method->wrapper_type != 4 && g_get_opcode != 0) {
+				op = g_get_opcode(*td->ip);
+			}
+ 		}		
+#else
+		op = *td->ip;
+#endif
+		switch (op) {
 		case CEE_NOP: 
 			/* lose it */
 			++td.ip;
@@ -956,24 +969,81 @@ generate (MonoMethod *method, RuntimeMethod *rtm, unsigned char *is_bb_start)
 			SIMPLE_OP(td, MINT_BREAK);
 			break;
 		case CEE_LDARG_0:
+#if ENABLE_SECURITY_BUILD
+			load_arg(td, 0);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDARG_1:
+#if ENABLE_SECURITY_BUILD
+			load_arg(td, 1);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDARG_2:
+#if ENABLE_SECURITY_BUILD
+			load_arg(td, 2);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDARG_3:
+#if ENABLE_SECURITY_BUILD
+			load_arg(td, 3);
+#else
 			load_arg (&td, *td.ip - CEE_LDARG_0);
+#endif
 			++td.ip;
 			break;
 		case CEE_LDLOC_0:
+#if ENABLE_SECURITY_BUILD
+			load_local(td, 0);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDLOC_1:
+#if ENABLE_SECURITY_BUILD
+			load_local(td, 1);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDLOC_2:
+#if ENABLE_SECURITY_BUILD
+			load_local(td, 2);
+			++td->ip;
+			break;
+#endif
 		case CEE_LDLOC_3:
+#if ENABLE_SECURITY_BUILD
+			load_local (td, 3);
+#else
 			load_local (&td, *td.ip - CEE_LDLOC_0);
+#endif
 			++td.ip;
 			break;
 		case CEE_STLOC_0:
+#if ENABLE_SECURITY_BUILD
+			store_local(td, 0);
+			++td->ip;
+			break;
+#endif
 		case CEE_STLOC_1:
+#if ENABLE_SECURITY_BUILD
+			store_local(td, 1);
+			++td->ip;
+			break;
+#endif
 		case CEE_STLOC_2:
+#if ENABLE_SECURITY_BUILD
+			store_local(td, 2);
+			++td->ip;
+			break;
+#endif
 		case CEE_STLOC_3:
+#if ENABLE_SECURITY_BUILD
+			store_local (td, 3);
+#else
 			store_local (&td, *td.ip - CEE_STLOC_0);
+#endif
 			++td.ip;
 			break;
 		case CEE_LDARG_S:
@@ -1041,13 +1111,47 @@ generate (MonoMethod *method, RuntimeMethod *rtm, unsigned char *is_bb_start)
 			}
 			break;
 		case CEE_LDC_I4_2:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (2) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_3:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (3) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_4:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (4) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_5:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (5) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_6:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (6) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_7:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (7) + MINT_LDC_I4_0);
+			PUSH_SIMPLE_TYPE(td, STACK_TYPE_I4);
+			break;
+#endif
 		case CEE_LDC_I4_8:
+#if ENABLE_SECURITY_BUILD
+			SIMPLE_OP(td, (8) + MINT_LDC_I4_0);
+#else
 			SIMPLE_OP(td, (*td.ip - CEE_LDC_I4_0) + MINT_LDC_I4_0);
+#endif
 			PUSH_SIMPLE_TYPE(&td, STACK_TYPE_I4);
 			break;
 		case CEE_LDC_I4_S: 

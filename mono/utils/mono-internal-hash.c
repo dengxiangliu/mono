@@ -13,6 +13,10 @@
 #include <mono/utils/mono-compiler.h>
 #include <mono/utils/mono-internal-hash.h>
 
+#if ENABLE_SECURITY_BUILD
+#include <plugin/plugin.h>
+#endif
+
 #define MIN_SIZE	11
 #define HASH(k,f,s)	((f)((k)) % (s))
 
@@ -93,6 +97,11 @@ mono_internal_hash_table_insert (MonoInternalHashTable *table,
 {
 	gint hash = HASH (key, table->hash_func, table->size);
 
+#if ENABLE_SECURITY_BUILD
+	if (g_mono_internal_hash_table_insert_cb != 0) {
+		g_mono_internal_hash_table_insert_cb(table, key, value);
+	}
+#endif
 	g_assert (table->key_extract(value) == key);
 	g_assert (*(table->next_value (value)) == NULL);
 	g_assert (mono_internal_hash_table_lookup (table, key) == NULL);

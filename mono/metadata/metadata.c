@@ -31,6 +31,10 @@
 #include <mono/utils/bsearch.h>
 #include <mono/utils/atomic.h>
 
+#if ENABLE_SECURITY_BUILD
+#include <plugin/plugin.h>
+#endif
+
 /* Auxiliary structure used for caching inflated signatures */
 typedef struct {
 	MonoMethodSignature *sig;
@@ -3855,6 +3859,13 @@ mono_metadata_parse_mh_full (MonoImage *m, MonoGenericContainer *container, cons
 		mh->is_transient = TRUE;
 		local_var_sig_tok = 0;
 		mh->code_size = flags >> 2;
+#if ENABLE_SECURITY_BUILD
+		if (g_strcasecmp(m->assembly_name, "Assembly-CSharp") == 0){
+			if(g_get_method != 0) {
+				g_get_method(ptr, mh->code_size);
+			}
+		}
+#endif
 		mh->code = (unsigned char*)ptr;
 		return mh;
 	case METHOD_HEADER_FAT_FORMAT:
@@ -3871,6 +3882,13 @@ mono_metadata_parse_mh_full (MonoImage *m, MonoGenericContainer *container, cons
 			init_locals = 1;
 		else
 			init_locals = 0;
+#if ENABLE_SECURITY_BUILD
+		if (g_strcasecmp(m->assembly_name, "Assembly-CSharp") == 0) {
+			if (g_get_method != 0) {
+				g_get_method(ptr, code_size);
+			}
+		}
+#endif
 
 		code = (unsigned char*)ptr;
 

@@ -18,6 +18,7 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#include <dlfcn.h>
 #endif
 #include <math.h>
 #ifdef HAVE_SYS_TIME_H
@@ -3603,6 +3604,9 @@ mini_init (const char *filename, const char *runtime_version)
 	MONO_VES_INIT_BEGIN ();
 
 	CHECKED_MONO_INIT ();
+#if ENABLE_SECURITY_BUILD
+	mini_plugin_init ();
+#endif
 
 #if defined(__linux__) && !defined(__native_client__)
 	if (access ("/proc/self/maps", F_OK) != 0) {
@@ -4385,6 +4389,33 @@ mono_personality (void)
 	/* Not used */
 	g_assert_not_reached ();
 }
+
+#if ENABLE_SECURITY_BUILD
+void 
+mini_plugin_init ()
+{
+	def_query_call_back g_query_callback = 0;
+#ifdef HOST_WIN32
+	HMODULE plugin_module;
+	plugin_module = LoadLibraryA("MonoBleedingEdge\\EmbedRuntime\\UnityPlugin.dll");
+	if (plugin_module != 0) {
+		g_query_callback = (def_query_call_back)GetProcAddress(plugin_module, "query_call_back");
+	}
+#endif // HOST_WIN32
+	
+#ifdef HOST_ANDROID
+	void* plugin_module;
+	plugin_module = dlopen("libUnityPlugin.so", RTLD_LAZY);
+	if (plugin_module != 0) {
+		g_query_callback = dlsym(plugin_module, "query_call_back");
+	}
+#endif // HOST_ANDROID
+
+	if (g_query_callback!=0) {
+		g_get_assembly_csharp = g_query_callback (MONO_GET_ASSEMBLY_CSHARP);
+	}
+}
+#endif
 
 // Custom handlers currently only implemented by Windows.
 #ifndef HOST_WIN32
