@@ -1164,7 +1164,9 @@ if ($build)
 				system('mkdir', '-p', $depsSdkFinal) eq 0 or die ("failed to create directory $depsSdkFinal\n");
 				system('tar', 'xaf', $depsSdkArchive, '-C', $depsSdkFinal) eq 0 or die ("failed to extract Linux SDK\n");
 				system('sudo', 'cp', '-R', "$depsSdkFinal/linux-sdk-$sdkVersion", '/etc/schroot') eq 0 or die ("failed to copy SDK\n");
+				system('sudo', 'ls', '/etc/schroot') eq 0 or die ("failed to list contents on /etc/schroot\n");
 				system("sed 's,^directory=.*,directory=$depsSdkFinal/$schroot,' \"$depsSdkFinal/$schroot.conf\" | sudo tee /etc/schroot/chroot.d/$schroot.conf") eq 0 or die ("failed to deploy Linux SDK\n");
+				system('sudo', 'ls', '/etc/schroot/chroot.d') eq 0 or die ("failed to list contents on /etc/schroot/chroot.d\n");
 			}
 
 			@commandPrefix = @linuxToolchain;
