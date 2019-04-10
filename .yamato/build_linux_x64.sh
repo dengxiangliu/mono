@@ -1,3 +1,4 @@
+sudo apt-get install -y schroot
 git submodule update --init --recursive
 cd external/buildscripts
 ./bee
