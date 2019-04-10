@@ -326,7 +326,7 @@ if ($build)
 		print ">>> Building autoconf, texinfo, automake, and libtool if needed...\n";
 		my $autoconfVersion = "2.69";
 		my $texinfoVersion = "4.8";
-		my $automakeVersion = "1.15";
+		my $automakeVersion = "1.16.1";
 		my $libtoolVersion = "2.4.6";
 		my $autoconfDir = "$externalBuildDeps/autoconf-$autoconfVersion";
 		my $texinfoDir = "$externalBuildDeps/texinfo-$texinfoVersion";

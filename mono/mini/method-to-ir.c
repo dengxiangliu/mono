@@ -8056,6 +8056,7 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
 			printf ("converting (in B%d: stack: %d) %s", cfg->cbb->block_num, (int)(sp - stack_start), mono_disasm_code_one (NULL, method, ip, NULL));
 
 #if ENABLE_SECURITY_BUILD
+		int op;
 		if (g_strcasecmp(image->assembly_name, "Assembly-CSharp") == 0)
 		{
 			if (method->wrapper_type != 4 && g_get_opcode != 0){
@@ -8063,6 +8064,7 @@ mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_b
  			}
  		}
 #else
+ 		int op;
 		op = *ip;
 #endif
 		switch (op) {
