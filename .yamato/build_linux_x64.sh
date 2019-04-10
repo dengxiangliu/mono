@@ -1,4 +1,5 @@
 sudo apt-get install -y schroot
+sudo chmod 4755 /usr/bin/schroot
 git submodule update --init --recursive
 cd external/buildscripts
 ./bee
